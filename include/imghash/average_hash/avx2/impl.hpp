@@ -1,5 +1,4 @@
 #include <cassert>
-#include <cmath>
 #include <cstdint>
 #include <immintrin.h>
 
@@ -40,7 +39,7 @@ static inline void _compute_hash(const uint32_t* hash_buf, const uint32_t averag
 
     uint8_t* dst_cursor = dst;
     const uint32_t* hash_cursor = hash_buf;
-    for (int i = 0; i < 2; i++) {
+    for (int i = 0; i < 2; i++, dst_cursor += 4) {
         __m256i hashj_i16x16[2];
         for (int j = 0; j < 2; j++) {
             __m256i hashk_i32x8[2];
@@ -53,9 +52,7 @@ static inline void _compute_hash(const uint32_t* hash_buf, const uint32_t averag
         __m256i hashi_i8x32 = _mm256_packs_epi16(hashj_i16x16[0], hashj_i16x16[1]);
         hashi_i8x32 = _mm256_permutevar8x32_epi32(hashi_i8x32, permute_mask);
         uint32_t hashi_half = _mm256_movemask_epi8(hashi_i8x32);
-        for (int idst = 0; idst < 4; idst++, dst_cursor++) {
-            *dst_cursor = (uint8_t)(hashi_half >> (idst * 8)) & 0xFF;
-        }
+        memcpy(dst_cursor, &hashi_half, sizeof(hashi_half));
     }
 }
 

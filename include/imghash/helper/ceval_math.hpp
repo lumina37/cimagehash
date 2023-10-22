@@ -1,5 +1,3 @@
-#include <cmath>
-
 namespace igh {
 
 template <typename T> consteval T cround(T value)
