@@ -1,25 +1,27 @@
 #include <cstdint>
 #include <immintrin.h>
 
+#include "imghash/typedef.h"
+
 namespace igh::average {
 
-static inline uint32_t sum_i32x8_to_u32(__m256i i32x8)
+static inline uint32_t sum_u32x8_to_u32(v_u32x8 src)
 {
-    i32x8 = _mm256_hadd_epi32(i32x8, i32x8);
+    src = _mm256_hadd_epi32(src, src);
 
     uint32_t store[8];
-    _mm256_storeu_si256((__m256i*)&store, i32x8);
+    _mm256_storeu_si256((__m256i*)&store, src);
 
     uint32_t sum = store[0] + store[1] + store[4] + store[5];
     return sum;
 }
 
-static inline uint64_t sum_i32x8_to_u64(__m256i i32x8)
+static inline uint64_t sum_u32x8_to_u64(v_u32x8 src)
 {
-    i32x8 = _mm256_hadd_epi32(i32x8, i32x8);
+    src = _mm256_hadd_epi32(src, src);
 
     uint32_t store[8];
-    _mm256_storeu_si256((__m256i*)&store, i32x8);
+    _mm256_storeu_si256((__m256i*)&store, src);
 
     uint64_t sum = (uint64_t)store[0] + store[1] + store[4] + store[5];
     return sum;

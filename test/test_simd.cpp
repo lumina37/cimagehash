@@ -1,16 +1,81 @@
+#include <cstdint>
+#include <immintrin.h>
+
 #include <catch2/catch_test_macros.hpp>
 #include <catch2/matchers/catch_matchers_floating_point.hpp>
 
-#include "imghash/average_hash/avx2/impl.hpp"
-
-TEST_CASE("acc24", "[acc24]")
+static inline void _collect_rgb2x48(const uint8_t* row0, const uint8_t* row1, __m256i* b, __m256i* g, __m256i* r)
 {
-    static const uint8_t arr1[24]{0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23};
-    REQUIRE(abs((int64_t)igh::average::sum_i32x8_to_u32(igh::average::_gather_24(arr1)) - 1525728) < 4);
+    __m128i x0, x1, x2, x3, x4, x5;
+    __m128i y0, y1, y2, y3, y4, y5;
+    x0 = _mm_loadu_si128((__m128i*)(row0 + 0));
+    x1 = _mm_loadu_si128((__m128i*)(row0 + 16));
+    x2 = _mm_loadu_si128((__m128i*)(row0 + 32));
+    x3 = _mm_loadu_si128((__m128i*)(row1 + 0));
+    x4 = _mm_loadu_si128((__m128i*)(row1 + 16));
+    x5 = _mm_loadu_si128((__m128i*)(row1 + 32));
 
-    static const uint8_t arr2[24]{255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255,
-                                  255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255};
-    REQUIRE(abs((int64_t)igh::average::sum_i32x8_to_u32(igh::average::_gather_24(arr2)) - 33423360) < 4);
+    y0 = _mm_unpacklo_epi8(x0, x3);
+    y1 = _mm_unpackhi_epi8(x0, x3);
+    y2 = _mm_unpacklo_epi8(x1, x4);
+    y3 = _mm_unpackhi_epi8(x1, x4);
+    y4 = _mm_unpacklo_epi8(x2, x5);
+    y5 = _mm_unpackhi_epi8(x2, x5);
+
+    x0 = _mm_unpacklo_epi8(y0, y3);
+    x1 = _mm_unpackhi_epi8(y0, y3);
+    x2 = _mm_unpacklo_epi8(y1, y4);
+    x3 = _mm_unpackhi_epi8(y1, y4);
+    x4 = _mm_unpacklo_epi8(y2, y5);
+    x5 = _mm_unpackhi_epi8(y2, y5);
+
+    y0 = _mm_unpacklo_epi8(x0, x3);
+    y1 = _mm_unpackhi_epi8(x0, x3);
+    y2 = _mm_unpacklo_epi8(x1, x4);
+    y3 = _mm_unpackhi_epi8(x1, x4);
+    y4 = _mm_unpacklo_epi8(x2, x5);
+    y5 = _mm_unpackhi_epi8(x2, x5);
+
+    x0 = _mm_unpacklo_epi8(y0, y3);
+    x1 = _mm_unpackhi_epi8(y0, y3);
+    x2 = _mm_unpacklo_epi8(y1, y4);
+    x3 = _mm_unpackhi_epi8(y1, y4);
+    x4 = _mm_unpacklo_epi8(y2, y5);
+    x5 = _mm_unpackhi_epi8(y2, y5);
+
+    __m256i b0 = _mm256_cvtepu8_epi16(x0);
+    __m256i b1 = _mm256_cvtepu8_epi16(x3);
+    __m256i g0 = _mm256_cvtepu8_epi16(x1);
+    __m256i g1 = _mm256_cvtepu8_epi16(x4);
+    __m256i r0 = _mm256_cvtepu8_epi16(x2);
+    __m256i r1 = _mm256_cvtepu8_epi16(x5);
+
+    *b = _mm256_add_epi16(b0, b1);
+    *g = _mm256_add_epi16(g0, g1);
+    *r = _mm256_add_epi16(r0, r1);
+}
+
+TEST_CASE("RGB", "[rgb]")
+{
+    uint8_t row0[48]{1,  2,  3,  4,  5,  6,  7,  8,  9,  10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24,
+                     25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48};
+    uint8_t row1[48]{49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63, 64, 65, 66, 67, 68, 69, 70, 71, 72,
+                     73, 74, 75, 76, 77, 78, 79, 80, 81, 82, 83, 84, 85, 86, 87, 88, 89, 90, 91, 92, 93, 94, 95, 96};
+
+    uint8_t bres[16]{};
+    uint8_t gres[16]{};
+    uint8_t rres[16]{};
+    uint8_t barr[16];
+    uint8_t garr[16];
+    uint8_t rarr[16];
+    __m256i b, g, r;
+
+    _collect_rgb2x48(row0, row1, &b, &g, &r);
+
+    _mm256_storeu_si256((__m256i*)barr, b);
+    for (size_t i = 0; i < 32; i++) {
+        REQUIRE(bres[i] == barr[i]);
+    }
 }
 
 TEST_CASE("Average", "[average]")
