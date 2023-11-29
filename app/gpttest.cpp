@@ -1,5 +1,5 @@
 #include <cstdint>
-#include <immintrin.h>
+#include <intrin.h>
 
 #include <bitset>
 #include <iostream>

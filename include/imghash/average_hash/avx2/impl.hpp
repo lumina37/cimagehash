@@ -1,14 +1,16 @@
 #include <cassert>
 #include <cstdint>
-#include <immintrin.h>
+#include <intrin.h>
 
-#include "const.hpp"
 #include "helper.hpp"
-#include "imghash/typedef.h"
+#include "imghash/helper/consts.hpp"
+#include "imghash/helper/macros.h"
+#include "imghash/helper/timer.hpp"
+#include "imghash/helper/typedefs.h"
 
 namespace igh::average {
 
-static inline void _compute_hash(const uint32_t* hash_buf, const uint32_t average, uint8_t* dst)
+static IGH_FORCEINLINE void _compute_hash(const uint32_t* hash_buf, const uint32_t average, uint8_t* dst)
 {
     const __m256i average_i32x8 = _mm256_set1_epi32((int)average);
     static const __m256i permute_mask = _mm256_set_epi32(7, 3, 6, 2, 5, 1, 4, 0);
@@ -27,7 +29,7 @@ static inline void _compute_hash(const uint32_t* hash_buf, const uint32_t averag
         }
         __m256i hashi_i8x32 = _mm256_packs_epi16(hashj_i16x16[0], hashj_i16x16[1]);
         hashi_i8x32 = _mm256_permutevar8x32_epi32(hashi_i8x32, permute_mask);
-        uint32_t hashi_half = _mm256_movemask_epi8(hashi_i8x32);
+        uint32_t hashi_half = (uint32_t)_mm256_movemask_epi8(hashi_i8x32);
         memcpy(dst_cursor, &hashi_half, sizeof(hashi_half));
     }
 }
@@ -40,7 +42,7 @@ constexpr int COL_UNIT_NBYTE = COL_UNIT_NPIX * CHANNELS;
  *
  * @note Each unit is in size of 2(lanes)x16 pixels
  */
-static inline void _collect_3ch_unit(const uint8_t* lane0, const uint8_t* lane1, v_u16x16* dst_b, v_u16x16* dst_g,
+static IGH_FORCEINLINE void _collect_3ch_unit(const uint8_t* lane0, const uint8_t* lane1, v_u16x16* dst_b, v_u16x16* dst_g,
                                      v_u16x16* dst_r)
 {
     v_u8x16 x0, x1, x2, x3, x4, x5;
@@ -96,7 +98,7 @@ static inline void _collect_3ch_unit(const uint8_t* lane0, const uint8_t* lane1,
  *
  * @note Each block will form a pixel in resized image
  */
-static inline void _collect_3ch_block(const uint8_t* src, const int rows, const int cols, const int row_step,
+static IGH_FORCEINLINE void _collect_3ch_block(const uint8_t* src, const int rows, const int cols, const int row_step,
                                       uint32_t* dst)
 {
     /* if you sum up too many units, uint16 will get overflowed */
@@ -221,7 +223,7 @@ static inline void _collect_3ch_block(const uint8_t* src, const int rows, const 
     *dst = dstb * ABLUE + dstg * AGREEN + dstr * ARED;
 }
 
-static inline void compute_ch3_div8(uint8_t* src, const int width, const int height, const int row_step, uint8_t* dst)
+static IGH_FORCEINLINE void compute_ch3_div8(uint8_t* src, const int width, const int height, const int row_step, uint8_t* dst)
 {
 
     const int block_cols = width / DST_W;

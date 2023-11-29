@@ -1,8 +1,10 @@
+#pragma once
+
 #include <cstdint>
 
-#include "../../helper/ceval_math.hpp"
+#include "imghash/helper/ceval_math.hpp"
 
-namespace igh::average {
+namespace igh::inline consts {
 
 constexpr uint32_t AMP_RS = 7; // right shift factor of global AMP
 constexpr uint32_t AMP = (uint32_t)1 << AMP_RS;
@@ -19,4 +21,4 @@ constexpr int DST_W = 8;
 constexpr int DST_H = 8;
 constexpr int HASH_LEN = DST_H * DST_W;
 
-} // namespace igh::average
+} // namespace igh::inline consts

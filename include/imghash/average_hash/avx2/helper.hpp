@@ -1,7 +1,7 @@
 #include <cstdint>
-#include <immintrin.h>
+#include <intrin.h>
 
-#include "imghash/typedef.h"
+#include "imghash/helper/typedefs.h"
 
 namespace igh::average {
 
