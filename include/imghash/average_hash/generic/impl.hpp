@@ -1,7 +1,3 @@
-#include <cassert>
-#include <cstdint>
-#include <intrin.h>
-
 #include "imghash/helper/consts.hpp"
 #include "imghash/helper/macros.h"
 #include "imghash/helper/structs.hpp"
@@ -12,25 +8,19 @@ namespace igh::average {
 
 static IGH_FORCEINLINE void _compute_hash(const uint32_t* hash_buf, const uint32_t average, uint8_t* dst)
 {
-    const __m256i average_i32x8 = _mm256_set1_epi32((int)average);
-    static const __m256i permute_mask = _mm256_set_epi32(7, 3, 6, 2, 5, 1, 4, 0);
+    constexpr int GROUP_BITS = sizeof(uint8_t) * 8;
+    constexpr int GROUPS = HASH_LEN / GROUP_BITS;
 
-    uint8_t* dst_cursor = dst;
     const uint32_t* hash_cursor = hash_buf;
-    for (int i = 0; i < 2; i++, dst_cursor += 4) {
-        __m256i hashj_i16x16[2];
-        for (int j = 0; j < 2; j++) {
-            __m256i hashk_i32x8[2];
-            for (int k = 0; k < 2; k++, hash_cursor += 8) {
-                __m256i hashcmp = _mm256_loadu_si256((__m256i*)hash_cursor);
-                hashk_i32x8[k] = _mm256_cmpgt_epi32(hashcmp, average_i32x8);
-            }
-            hashj_i16x16[j] = _mm256_packs_epi32(hashk_i32x8[0], hashk_i32x8[1]);
+    uint8_t* dst_cursor = dst;
+
+    for (int idstgp = 0; idstgp < GROUPS; idstgp++) {
+        *dst_cursor = 0;
+        uint8_t mask = 0b00000001;
+        for (int ibit = 0; ibit < GROUP_BITS; ibit++, mask <<= 1, hash_cursor++) {
+            *dst_cursor |= *hash_cursor > average ? mask : 0;
         }
-        __m256i hashi_i8x32 = _mm256_packs_epi16(hashj_i16x16[0], hashj_i16x16[1]);
-        hashi_i8x32 = _mm256_permutevar8x32_epi32(hashi_i8x32, permute_mask);
-        uint32_t hashi_half = (uint32_t)_mm256_movemask_epi8(hashi_i8x32);
-        memcpy(dst_cursor, &hashi_half, sizeof(hashi_half));
+        dst_cursor++;
     }
 }
 

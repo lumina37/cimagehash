@@ -7,7 +7,7 @@ function(igh_add_exec exec_name)
     target_compile_features(${exec_name} PRIVATE cxx_std_20)
 
     if (CMAKE_CXX_COMPILER_ID MATCHES "MSVC")
-        target_compile_options(${exec_name} PRIVATE "/arch:AVX2" "/Wall" "/Ox")
+        target_compile_options(${exec_name} PRIVATE "/Wall")
     else()
         target_compile_options(${exec_name} PRIVATE "-mavx2")
     endif()
