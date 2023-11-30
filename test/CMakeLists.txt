@@ -1,5 +1,5 @@
-find_package(Catch2 3 REQUIRED)
-find_package(OpenCV COMPONENTS core imgcodecs REQUIRED)
+find_package(Catch2 3)
+find_package(OpenCV COMPONENTS core imgcodecs)
 
 add_executable(test "test_simd.cpp")
 target_include_directories(test PRIVATE "../include" ${OpenCV_INCLUDE_DIRS})

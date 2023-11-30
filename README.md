@@ -8,11 +8,11 @@ Ultra-fast imagehash implementation.
 
 First pre-release after
 
-- [x] Average hash
-- [ ] Perceptual hash
-- [ ] Difference hash
+- [x] ahash
+- [ ] phash
+- [ ] dhash
 - [ ] AVX2 support
 - [ ] NEON support
 - [ ] CUDA support
 - [ ] Python binding
-- [ ] Java/Kotlin binding
+- [ ] Java binding
