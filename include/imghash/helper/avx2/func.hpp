@@ -1,9 +1,10 @@
 #include <cstdint>
 #include <intrin.h>
 
-#include "imghash/helper/typedefs.h"
+#include "types.hpp"
+#include "structs.hpp"
 
-namespace igh::average {
+namespace igh::inline func {
 
 static inline uint32_t sum_u32x8_to_u32(v_u32x8 src)
 {
@@ -27,4 +28,4 @@ static inline uint64_t sum_u32x8_to_u64(v_u32x8 src)
     return sum;
 }
 
-} // namespace igh::average
+} // namespace igh::inline func

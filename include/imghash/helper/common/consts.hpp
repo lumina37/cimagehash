@@ -2,7 +2,7 @@
 
 #include <cstdint>
 
-#include "imghash/helper/ceval_math.hpp"
+#include "cfunc.hpp"
 
 namespace igh::inline consts {
 

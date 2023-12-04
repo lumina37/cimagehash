@@ -4,7 +4,7 @@
 #include <opencv2/img_hash.hpp>
 #include <opencv2/imgcodecs.hpp>
 
-#include "imghash/average_hash/generic/impl.hpp"
+#include "imghash/average_hash/avx2/impl.hpp"
 
 int main()
 {
