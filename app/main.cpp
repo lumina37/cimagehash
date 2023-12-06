@@ -20,7 +20,7 @@ int main()
     /* My ahash */
     uint8_t res1[8];
     auto start = std::chrono::high_resolution_clock::now();
-    igh::average::compute_ch3_div8(src1.data, src1.cols, src1.rows, (int)src1.step, res1);
+    igh::ahash::compute_ch3_div8(src1.data, src1.cols, src1.rows, (int)src1.step, res1);
     auto end = std::chrono::high_resolution_clock::now();
     auto duration = std::chrono::duration_cast<std::chrono::nanoseconds>(end - start).count();
 

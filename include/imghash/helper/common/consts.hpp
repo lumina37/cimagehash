@@ -2,6 +2,7 @@
 
 #include <cstdint>
 
+#include "types.hpp"
 #include "cfunc.hpp"
 
 namespace igh::inline consts {
@@ -17,8 +18,8 @@ constexpr uint32_t ARED = static_cast<uint32_t>(cround(RED * AMP));
 constexpr uint32_t AGREEN = static_cast<uint32_t>(cround(GREEN * AMP));
 constexpr uint32_t ABLUE = static_cast<uint32_t>(cround(BLUE * AMP));
 
-constexpr int DST_W = 8;
-constexpr int DST_H = 8;
-constexpr int HASH_LEN = DST_H * DST_W;
+constexpr uint DST_W = 8;
+constexpr uint DST_H = 8;
+constexpr uint HASH_LEN = DST_H * DST_W;
 
 } // namespace igh::inline consts

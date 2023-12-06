@@ -8,7 +8,7 @@
 #include "imghash/helper/common/timer.hpp"
 #include "imghash/helper/common/types.hpp"
 
-namespace igh::average {
+namespace igh::ahash::inline avx2 {
 
 static IGH_FORCEINLINE void _compute_hash(const uint32_t* hash_buf, const uint32_t average, uint8_t* dst)
 {
@@ -108,7 +108,7 @@ static IGH_FORCEINLINE void compute_ch3_div8(const uint8_t* src, const uint widt
     const uint64_t sum = std::accumulate(resized_8x8, resized_8x8 + HASH_LEN, (uint64_t)(HASH_LEN / 2));
     const uint32_t average = (uint32_t)(sum / HASH_LEN);
 
-    /* Compare to the average and output average hash */
+    /* Compare to the ahash and output ahash hash */
     _compute_hash(resized_8x8, average, dst);
 }
 
@@ -125,4 +125,4 @@ static void compute(uint8_t* src, uint width, uint height, uint row_step, uint8_
     }
 }
 
-} // namespace igh::average
+} // namespace igh::ahash::inline avx2
