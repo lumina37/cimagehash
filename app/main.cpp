@@ -8,7 +8,6 @@
 
 int main()
 {
-    cv::setNumThreads(0);
     auto src1 = cv::imread("sample.jpg");
     auto src2 = src1.clone();
     std::cout << "src1 width: " << src1.cols << '\n';

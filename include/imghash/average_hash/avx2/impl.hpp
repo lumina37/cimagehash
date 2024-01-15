@@ -34,40 +34,21 @@ static IGH_FORCEINLINE void _compute_hash(const uint32_t* hash_buf, const uint32
     }
 }
 
+constexpr uint UNIT_PIXS = sizeof(v_u8x16) / vBGRu32x8::CHANNELS;
+
 static IGH_FORCEINLINE void _collect_ch3_seg(const uint8_t* src, const uint pixes, vBGRu32x8* pBGR)
 {
-    constexpr uint GROUP_PIXS = sizeof(v_u8x16);
-    const uint groups = pixes / GROUP_PIXS;
-    const uint group_resi_pix = pixes - groups * GROUP_PIXS;
-    const v_u16x16 zero = _mm256_setzero_si256();
+    const uint units = pixes / UNIT_PIXS;
+    const uint unit_resi_pix = pixes - units * UNIT_PIXS;
 
     const uint8_t* src_cursor = src;
-    for (uint igp = 0; igp < groups; igp++) {
-        v_u16x16 b_b = _mm256_cvtepu8_epi16(_mm_loadu_si128((v_u8x16*)(src_cursor + 0 * sizeof(v_u8x16))));
-        v_u32x8 bgrbgrbg_0 = _mm256_unpacklo_epi16(b_b, zero);
-        v_u32x8 rbgrbgrg_0 = _mm256_unpackhi_epi16(b_b, zero);
-
-        v_u16x16 g_g = _mm256_cvtepu8_epi16(_mm_loadu_si128((v_u8x16*)(src_cursor + 1 * sizeof(v_u8x16))));
-        v_u32x8 grbgrbgr_0 = _mm256_unpacklo_epi16(g_g, zero);
-        v_u32x8 bgrbgrbg_1 = _mm256_unpackhi_epi16(g_g, zero);
-
-        v_u16x16 r_r = _mm256_cvtepu8_epi16(_mm_loadu_si128((v_u8x16*)(src_cursor + 2 * sizeof(v_u8x16))));
-        v_u32x8 rbgrbgrg_1 = _mm256_unpacklo_epi16(r_r, zero);
-        v_u32x8 grbgrbgr_1 = _mm256_unpackhi_epi16(r_r, zero);
-
-        pBGR->vb_ = _mm256_add_epi32(pBGR->vb_, bgrbgrbg_0);
-        pBGR->vb_ = _mm256_add_epi32(pBGR->vb_, bgrbgrbg_1);
-
-        pBGR->vg_ = _mm256_add_epi32(pBGR->vg_, grbgrbgr_0);
-        pBGR->vg_ = _mm256_add_epi32(pBGR->vg_, grbgrbgr_1);
-
-        pBGR->vr_ = _mm256_add_epi32(pBGR->vr_, rbgrbgrg_0);
-        pBGR->vr_ = _mm256_add_epi32(pBGR->vr_, rbgrbgrg_1);
-
-        src_cursor += sizeof(v_u8x16) * vBGRu32x8::CHANNELS;
+    for (uint iu = 0; iu < units; iu++) {
+        v_u16x16 bgrx5b = _mm256_cvtepu8_epi16(_mm_loadu_si128((v_u8x16*)src_cursor));
+        pBGR->v_ = _mm256_add_epi16(pBGR->v_, bgrx5b);
+        src_cursor += UNIT_PIXS * vBGRu32x8::CHANNELS;
     }
 
-    for (uint ipix = 0; ipix < group_resi_pix; ipix++) {
+    for (uint ipix = 0; ipix < unit_resi_pix; ipix++) {
         pBGR->b_ += *(src_cursor++);
         pBGR->g_ += *(src_cursor++);
         pBGR->r_ += *(src_cursor++);
@@ -77,8 +58,8 @@ static IGH_FORCEINLINE void _collect_ch3_seg(const uint8_t* src, const uint pixe
 static IGH_FORCEINLINE void _collect_ch3_row(const uint8_t* src, const uint width, vBGRu32x8* pBGRs)
 {
     const uint block_cols = width / DST_W;
-    const uint8_t* src_cursor = src;
 
+    const uint8_t* src_cursor = src;
     for (uint iblk = 0; iblk < DST_W; iblk++) {
         _collect_ch3_seg(src_cursor, block_cols, pBGRs + iblk);
         src_cursor += block_cols * vBGRu32x8::CHANNELS;
