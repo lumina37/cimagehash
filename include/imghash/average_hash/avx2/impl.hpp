@@ -1,4 +1,4 @@
-#include <intrin.h>
+#include <immintrin.h>
 #include <numeric>
 
 #include "imghash/helper/avx2/func.hpp"

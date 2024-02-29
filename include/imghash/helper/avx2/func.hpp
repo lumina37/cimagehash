@@ -1,5 +1,5 @@
 #include <cstdint>
-#include <intrin.h>
+#include <immintrin.h>
 
 #include "types.hpp"
 #include "structs.hpp"
