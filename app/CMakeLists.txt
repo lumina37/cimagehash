@@ -1,8 +1,6 @@
-find_package(OpenCV COMPONENTS core imgcodecs imgproc img_hash)
-
 function(igh_add_exec exec_name)
     add_executable(${exec_name} ${ARGV})
-    target_include_directories(${exec_name} PRIVATE "../include" ${OpenCV_INCLUDE_DIRS})
+    target_include_directories(${exec_name} PRIVATE ${IGH_INCLUDE_DIRS} ${OpenCV_INCLUDE_DIRS})
     target_link_libraries(${exec_name} PRIVATE ${OpenCV_LIBS})
     target_compile_features(${exec_name} PRIVATE cxx_std_20)
 
