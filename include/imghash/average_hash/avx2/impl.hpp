@@ -2,7 +2,6 @@
 #include <numeric>
 
 #include "imghash/helper/avx2/func.hpp"
-#include "imghash/helper/avx2/structs.hpp"
 #include "imghash/helper/common/consts.hpp"
 #include "imghash/helper/common/macros.h"
 #include "imghash/helper/common/timer.hpp"

@@ -2,7 +2,6 @@
 #include <immintrin.h>
 
 #include "types.hpp"
-#include "structs.hpp"
 
 namespace igh::inline func {
 
