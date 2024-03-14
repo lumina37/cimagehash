@@ -7,7 +7,7 @@ function(igh_add_exec exec_name)
     if (CMAKE_CXX_COMPILER_ID MATCHES "MSVC")
         target_compile_options(${exec_name} PRIVATE "/Wall")
     else ()
-        target_compile_options(${exec_name} PRIVATE "-march=native" "-Wall" "-Wextra")
+        target_compile_options(${exec_name} PRIVATE "-Wall" "-Wextra")
     endif ()
 endfunction()
 

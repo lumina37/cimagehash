@@ -4,19 +4,19 @@
 
 namespace igh::inline structs {
 
-template <typename T> class BGR
+template <typename T> class BlockSum
 {
 public:
-    BGR() = default;
-    BGR(const BGR& rhs) = default;
+    BlockSum() = default;
+    BlockSum(const BlockSum& rhs) = default;
 
-    [[nodiscard]] T gray() const;
+    [[nodiscard]] IGH_FORCEINLINE T gray() const { return b_ * ABLUE + g_ * AGREEN + r_ * ARED; }
+
+    static constexpr uint CHANNELS = 3;
 
     T b_, g_, r_;
 };
 
-template <typename T> T BGR<T>::gray() const { return b_ * ABLUE + g_ * AGREEN + r_ * ARED; }
-
-using BGRu32 = BGR<uint32_t>;
+using BlockSumU32 = BlockSum<uint32_t>;
 
 } // namespace igh::inline structs
