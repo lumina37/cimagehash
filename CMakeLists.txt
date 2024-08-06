@@ -1,8 +1,9 @@
 cmake_minimum_required(VERSION 3.15)
 
-project("cimghash" VERSION "0.1.0")
+project(cimghash VERSION "0.1.0" LANGUAGES CXX)
 
-find_package(OpenCV COMPONENTS core imgcodecs imgproc img_hash)
-set(IGH_INCLUDE_DIRS "${PROJECT_SOURCE_DIR}/include")
+include(cmake/options.cmake)
+include(cmake/dependencies.cmake)
+include(cmake/helper.cmake)
 
-add_subdirectory(app)
+add_subdirectory(bin)

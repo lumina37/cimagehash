@@ -18,8 +18,4 @@ constexpr uint32_t ARED = static_cast<uint32_t>(cround(RED * AMP));
 constexpr uint32_t AGREEN = static_cast<uint32_t>(cround(GREEN * AMP));
 constexpr uint32_t ABLUE = static_cast<uint32_t>(cround(BLUE * AMP));
 
-constexpr uint DST_W = 8;
-constexpr uint DST_H = 8;
-constexpr uint HASH_LEN = DST_H * DST_W;
-
 } // namespace igh::inline consts

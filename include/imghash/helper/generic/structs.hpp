@@ -1,22 +1,21 @@
 #pragma once
 
 #include "imghash/helper/common/consts.hpp"
+#include "imghash/helper/common/macros.h"
 
 namespace igh::inline structs {
 
-template <typename T> class BlockSum
+class BlockSumU32
 {
 public:
-    BlockSum() = default;
-    BlockSum(const BlockSum& rhs) = default;
+    BlockSumU32() = default;
+    BlockSumU32(const BlockSumU32& rhs) = default;
 
-    [[nodiscard]] IGH_FORCEINLINE T gray() const { return b_ * ABLUE + g_ * AGREEN + r_ * ARED; }
+    [[nodiscard]] IGH_FORCEINLINE uint32_t gray() const { return b_ * ABLUE + g_ * AGREEN + r_ * ARED; }
 
     static constexpr uint CHANNELS = 3;
 
-    T b_, g_, r_;
+    uint32_t b_, g_, r_;
 };
-
-using BlockSumU32 = BlockSum<uint32_t>;
 
 } // namespace igh::inline structs

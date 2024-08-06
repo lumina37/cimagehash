@@ -1,0 +1,16 @@
+function(igh_add_executable name srcs)
+    add_executable(${name} ${srcs})
+    target_include_directories(${name} PRIVATE ${IGH_INCLUDE_DIRS} ${OpenCV_INCLUDE_DIRS})
+    target_link_libraries(${name} PRIVATE ${OpenCV_LIBS})
+    target_compile_features(${name} PRIVATE cxx_std_20)
+
+    if (CMAKE_CXX_COMPILER_ID MATCHES "MSVC")
+        target_compile_options(${name} PRIVATE "/Wall")
+    else ()
+        target_compile_options(${name} PRIVATE "-Wall" "-Wextra")
+    endif ()
+endfunction()
+
+igh_add_executable(bench_this "bench_this.cpp")
+igh_add_executable(bench_ocv "bench_ocv.cpp")
+igh_add_executable(gpttest "gpttest.cpp")

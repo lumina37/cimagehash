@@ -18,10 +18,8 @@ int main()
     /* OpenCV ahash */
     cv::Mat res2;
     auto start = std::chrono::high_resolution_clock::now();
-    for (int i = 0; i < 1000; i++) {
-        auto ptr_hasher = cv::img_hash::AverageHash::create();
-        ptr_hasher->compute(src, res2);
-    }
+    auto ptr_hasher = cv::img_hash::AverageHash::create();
+    ptr_hasher->compute(src, res2);
     auto end = std::chrono::high_resolution_clock::now();
     auto duration = std::chrono::duration_cast<std::chrono::nanoseconds>(end - start).count();
 

@@ -1,11 +1,10 @@
-#include <immintrin.h>
+#pragma once
+
 #include <numeric>
 
+#include "imghash/average_hash/consts.hpp"
 #include "imghash/helper/avx2/func.hpp"
 #include "imghash/helper/avx2/structs.hpp"
-#include "imghash/helper/common/consts.hpp"
-#include "imghash/helper/common/macros.h"
-#include "imghash/helper/common/timer.hpp"
 #include "imghash/helper/common/types.hpp"
 
 namespace igh::ahash::inline avx2 {
@@ -34,45 +33,63 @@ static IGH_FORCEINLINE void _compute_hash(const uint32_t* hash_buf, const uint32
     }
 }
 
-static IGH_FORCEINLINE void _collect_ch3_seg(const uint8_t* src, const uint pixes, vBGRu32* pBGR)
+static IGH_FORCEINLINE void _collect_ch3_seg(const uint8_t* row_start, const Segment& segment, vBlockSumU32* block_sum)
 {
-    const uint8_t* src_cursor = src;
+    const uint8_t* cursor = row_start + segment.shift;
+    uint8_t targetv = segment.init_targetv;
 
-    for (uint ipix = 0; ipix < pixes; ipix++) {
-        pBGR->b_ += *(src_cursor++);
-        pBGR->g_ += *(src_cursor++);
-        pBGR->r_ += *(src_cursor++);
+    v_u8x16 head = _mm_load_si128((v_u8x16*)cursor);
+    head = _mm_and_si128(head, segment.head_mask);
+    v_u16x16 expand_head = _mm256_cvtepu8_epi16(head);
+    block_sum->v_[targetv] = _mm256_add_epi16(expand_head, block_sum->v_[targetv]);
+    targetv = Segment::LOOP_HELPER[targetv + 1];
+    cursor += sizeof(v_u8x16);
+
+    for (uint iloop = 0; iloop < segment.loop_num; iloop++) {
+        v_u8x16 v = _mm_load_si128((v_u8x16*)cursor);
+        v_u16x16 expand_v = _mm256_cvtepu8_epi16(v);
+        block_sum->v_[targetv] = _mm256_add_epi16(expand_v, block_sum->v_[targetv]);
+        targetv = Segment::LOOP_HELPER[targetv + 1];
+        cursor += sizeof(v_u8x16);
     }
+
+    v_u8x16 tail = _mm_load_si128((v_u8x16*)cursor);
+    tail = _mm_and_si128(tail, segment.tail_mask);
+    v_u16x16 expand_tail = _mm256_cvtepu8_epi16(tail);
+    block_sum->v_[targetv] = _mm256_add_epi16(expand_tail, block_sum->v_[targetv]);
 }
 
-static IGH_FORCEINLINE void _collect_ch3_row(const uint8_t* src, const uint width, vBGRu32* pBGRs)
+static IGH_FORCEINLINE void _collect_ch3_row(const uint8_t* row_start, const Segment (&segments)[DST_W],
+                                             vBlockSumU32* block_sums)
 {
-    const uint blk_width = width / DST_W;
-    const uint8_t* src_cursor = src;
-
     for (uint iblk = 0; iblk < DST_W; iblk++) {
-        _collect_ch3_seg(src_cursor, blk_width, pBGRs + iblk);
-        constexpr uint CHANNELS = 3;
-        src_cursor += blk_width * CHANNELS;
+        const auto& segment = segments[iblk];
+        _collect_ch3_seg(row_start, segment, block_sums + iblk);
     }
 }
 
 static IGH_FORCEINLINE void compute_ch3_div8(const uint8_t* src, const uint width, const uint height,
                                              const uint row_step, uint8_t* dst)
 {
-    const uint block_rows = height / DST_H;
-    uint32_t resized_8x8[HASH_LEN];
+    const uint block_row_num = height / DST_H; // how many rows in a block
+    const uint block_width_bytes = width / DST_W * vBlockSumU32::CHANNELS;
 
+    Segment segments[DST_W];
+    for (uint i = 0; i < DST_W; i++) {
+        segments[i] = Segment(i * block_width_bytes, block_width_bytes);
+    }
+
+    uint32_t resized_8x8[HASH_LEN];
     const uint8_t* src_cursor = src;
     uint32_t* dst_cursor = resized_8x8;
     for (uint idstrow = 0; idstrow < DST_H; idstrow++) {
-        vBGRu32 vBGRs[DST_W]{};
-        for (uint isrcrow = 0; isrcrow < block_rows; isrcrow++) {
-            _collect_ch3_row(src_cursor, width, vBGRs);
+        vBlockSumU32 block_sums[DST_W]{};
+        for (uint isrcrow = 0; isrcrow < block_row_num; isrcrow++) {
+            _collect_ch3_row(src_cursor, segments, block_sums);
             src_cursor += row_step;
         }
-        for (const auto& BGR : vBGRs) {
-            *dst_cursor = BGR.gray();
+        for (const auto& block_sum : block_sums) {
+            *dst_cursor = block_sum.gray();
             dst_cursor++;
         }
     }
@@ -86,8 +103,9 @@ static IGH_FORCEINLINE void compute_ch3_div8(const uint8_t* src, const uint widt
 
 static void compute(uint8_t* src, uint width, uint height, uint row_step, uint8_t* dst)
 {
-    assert(width >= 32);
-    assert(height >= 32);
+    assert(width >= 64);
+    assert(height >= 64);
+    assert(align_le((size_t)src, sizeof(v_u8x16)) == (size_t)src);
 
     if (((width % DST_W) & (height % DST_H)) == 0) {
         compute_ch3_div8(src, width, height, row_step, dst);

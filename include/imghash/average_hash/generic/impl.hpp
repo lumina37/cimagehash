@@ -1,10 +1,11 @@
+#pragma once
+
 #include <cassert>
 #include <numeric>
 
-#include "imghash/helper/common/macros.h"
-#include "imghash/helper/common/timer.hpp"
 #include "imghash/helper/common/types.hpp"
 #include "imghash/helper/generic/structs.hpp"
+#include "imghash/average_hash/consts.hpp"
 
 namespace igh::ahash::inline generic {
 
